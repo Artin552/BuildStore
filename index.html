@@ -13,6 +13,7 @@
   <script src="/js/auth.js" defer></script>
   <script src="/js/search.js" defer></script>
   <script src="/js/index.js" defer></script>
+
 </head>
 <body>
   <!-- ШАПКА САЙТА (HEADER) -->
@@ -47,9 +48,12 @@
          <div class="auth-links"></div>
 
         <!-- Корзина (заглушка для будущей реализации) -->
-        <div class="cart" id="cartBtn" title="Корзина">
-          🛒 <span class="cart-badge" id="cartBadge">0</span>
-        </div>
+
+        <a href="/frontend/cart.html" class="cart" id="cartBtn" title="Корзина">
+         🛒 <span class="cart-badge" id="cartBadge">0</span>
+        </a> 
+
+      
 
         <!-- ЕДИНСТВЕННАЯ КНОПКА для добавления объявления (другая есть в личном кабинете) -->
         <a class="btn add-listing" href="/frontend/add.html" id="addBtn">+ Добавить объявление</a>
@@ -110,6 +114,7 @@
             <p>Выбираете нужный материал или инструмент и добавляете в корзину. Мы показываем проверенных продавцов и наличие на складе.</p>
           </div>
         </div>
+
 
         <!-- Шаг 2: Доставка -->
         <div class="accordion-item" data-step="2">

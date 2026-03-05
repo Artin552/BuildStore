@@ -14,7 +14,7 @@
   --accent: #00C4B4;
   --gradient-start: #00C4B4;
   --gradient-end: #6E44FF;
-  --bg: #F8FAFC;
+  --bg: #f8fafc;
   --text: #1E293B;
   --anim: #FF6B6B;
 
@@ -262,7 +262,8 @@ a:hover {
   font-size: clamp(26px, 4.6vw, 44px);
   line-height: 1.05;
   letter-spacing: -0.4px;
-  text-shadow: 0 6px 20px rgba(199, 209, 255, 0.836);
+  color: #ffffff;
+  text-shadow: 0 10px 20px rgb(26, 54, 93);
 }
 
 /* Поиск в герое */
