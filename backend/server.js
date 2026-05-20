@@ -17,6 +17,7 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config(); // Загружаем переменные окружения из .env файла
 const authRoutes = require('./routes/auth'); // Маршруты аутентификации
 const listingsRoutes = require('./routes/listings'); // Маршруты объявлений
+const ordersRoutes = require('./routes/orders'); // Маршруты заказов
 
 // ============================================================
 // ОБРАБОТЧИКИ ОШИБОК
@@ -98,9 +99,11 @@ app.use((err, req, res, next) => {
 // Все маршруты аутентификации начинаются с /api/auth
 app.use('/api/auth', authRoutes.router);
 
-
 // Все маршруты объявлений начинаются с /api/listings
 app.use('/api/listings', listingsRoutes);
+
+// Все маршруты заказов начинаются с /api/orders
+app.use('/api/orders', ordersRoutes);
 
 // ============================================================
 // РАЗДАЧА СТАТИЧЕСКИХ ФАЙЛОВ (фронтенд)

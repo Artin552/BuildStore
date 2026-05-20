@@ -2,6 +2,17 @@
 
 This is a small marketplace demo (Node/Express backend + static frontend). Quick notes to run locally.
 
+## 🆕 Новое в версии 1.0.1 - Корзина и заказы
+
+Полностью реализована система корзины и оформления заказов:
+- ✅ Корзина с сохранением в localStorage
+- ✅ Страница просмотра корзины
+- ✅ Оформление заказов (требует авторизации)
+- ✅ История заказов пользователя
+- ✅ API для управления заказами
+
+**[📖 Полная документация](./CART_IMPLEMENTATION.md)** | **[🚀 Быстрый старт](./CART_QUICK_START.md)** | **[💻 Примеры кода](./CODE_EXAMPLES.md)**
+
 ## Required env variables
 - `JWT_SECRET` — secret for signing JWT (development fallback exists but set in production!) 
 - `HOST` — host to bind (default `127.0.0.1`)
@@ -15,33 +26,35 @@ This is a small marketplace demo (Node/Express backend + static frontend). Quick
 BuildStoreNET/
 ├── backend/              # Node.js/Express server
 │   ├── server.js        # Main server file
-│   ├── db.js            # SQLite database setup
+│   ├── db.js            # SQLite database setup (+ orders tables)
 │   ├── routes/
 │   │   ├── auth.js      # Authentication API endpoints
-│   │   └── listings.js  # Listings API endpoints
+│   │   ├── listings.js  # Listings API endpoints
+│   │   └── orders.js    # 🆕 Orders API endpoints
 │   ├── package.json
-│   └── users.db         # SQLite database
+│   └── users.db         # SQLite database (+ orders, order_items)
 ├── frontend/            # Static HTML/CSS/JS files
 │   ├── css/
 │   │   └── styles.css   # Global styles
 │   ├── js/
-│   │   ├── auth.js      # Auth UI management (client-side)
-│   │   └── search.js    # Unified search module (used on all pages)
+│   │   ├── auth.js      # Auth UI management
+│   │   ├── cart.js      # 🆕 Shopping cart management
+│   │   ├── cart-page.js # 🆕 Cart page logic
+│   │   ├── orders.js    # 🆕 Orders page logic
+│   │   └── search.js    # Search module
+│   ├── cart.html        # 🆕 Shopping cart page
+│   ├── orders.html      # 🆕 My orders page
 │   ├── img/             # Images and videos
-│   ├── html files       # Various pages (listings.html, add.html, etc.)
 │   └── ...
 ├── tests/               # Test suite
-│   ├── smoke_test.js              # Basic auth flow test
-│   ├── smoke_test_search.js       # Search unification test
-│   ├── test_api.js                # API endpoints test
-│   ├── test_listings.js           # CRUD operations test
-│   ├── add_test_data.js           # Add test data to DB
-│   ├── check_db.js                # Check DB contents
-│   ├── README.md                  # Test documentation
-│   └── ...
-├── uploads/             # User-uploaded images (outside frontend for security)
+├── uploads/             # User-uploaded images
 ├── index.html          # Main landing page
-├── package.json
+├── CART_IMPLEMENTATION.md  # 🆕 Cart documentation
+├── CART_QUICK_START.md     # 🆕 Quick start guide
+├── CODE_EXAMPLES.md        # 🆕 Code examples
+├── ARCHITECTURE.md         # 🆕 Architecture diagrams
+├── IMPLEMENTATION_SUMMARY.md # 🆕 Change summary
+├── test-integration.js     # 🆕 Integration test
 └── ...
 ```
 

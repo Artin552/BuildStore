@@ -30,6 +30,32 @@ db.serialize(() => {
     )
   `);
 
+  // Таблица заказов
+  db.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      total TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at INTEGER,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    )
+  `);
+
+  // Таблица товаров в заказе
+  db.run(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER NOT NULL,
+      listing_id INTEGER NOT NULL,
+      quantity INTEGER DEFAULT 1,
+      price_at_purchase TEXT,
+      created_at INTEGER,
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (listing_id) REFERENCES listings(id)
+    )
+  `);
+
   // Добавим дополнительные столбцы, которые используются в приложении (безопасно через PRAGMA)
   db.all("PRAGMA table_info('listings')", (err, cols) => {
     if (err) return console.error('DB pragma error', err);
@@ -50,6 +76,10 @@ db.serialize(() => {
     db.run("CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category)", (e) => { if (e) console.error('Index create error', e); });
 
     db.run("CREATE INDEX IF NOT EXISTS idx_listings_owner ON listings(owner_id)", (e) => { if (e) console.error('Index owner error', e); });
+
+    // индексы для заказов
+    db.run("CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id)", (e) => { if (e) console.error('Index orders_user error', e); });
+    db.run("CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)", (e) => { if (e) console.error('Index order_items_order error', e); });
   });
 
 

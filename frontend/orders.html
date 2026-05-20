@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои заказы — СтройМаркет</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/orders.js" defer></script>
+  <style>
+    .order-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: #f9f9f9;
+    }
+    .order-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .order-number {
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--primary);
+    }
+    .order-date {
+      color: #999;
+      font-size: 14px;
+    }
+    .order-total {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .order-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .order-status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .order-status.confirmed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    .order-status.shipped {
+      background: #e7d4f5;
+      color: #663399;
+    }
+    .order-status.delivered {
+      background: #d4edda;
+      color: #155724;
+    }
+    .order-status.cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .order-items {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .order-item-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    .order-item-name {
+      flex: 1;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <!-- ШАПКА САЙТА -->
+  <header class="header main-header">
+    <div class="top_header header-inner container">
+      <div class="logo-wrap">
+        <a class="logo" href="/index.html">
+          <span class="brand">BUILDSTORE</span>
+        </a>
+        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
+          🔨
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ОСНОВНОЕ СОДЕРЖИМОЕ -->
+  <main class="container" style="padding: 20px 0 40px 0; max-width: 800px;">
+    <h1 style="margin-bottom: 24px;">📦 Мои заказы</h1>
+
+    <div id="ordersContainer" class="loading">
+      Загрузка заказов...
+    </div>
+  </main>
+
+  <!-- ФУТЕР -->
+  <footer class="footer">
+    © 2025 СтройМаркет
+  </footer>
+</body>
+</html>

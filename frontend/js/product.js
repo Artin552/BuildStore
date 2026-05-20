@@ -42,9 +42,9 @@
 
               <div class="listing-cta" style="margin:24px 0; padding:24px; background:#f0f8ff; border-radius:8px;">
                 <h3 style="margin-top:0;">Готовы купить?</h3>
-                <p class="muted">Свяжитесь с нами или оформите заказ онлайн.</p>
+                <p class="muted">Добавьте товар в корзину и оформите заказ онлайн.</p>
                 <div style="margin-top:16px; display:flex; gap:12px;">
-                  <button class="btn" onclick="alert('Функция заказа будет добавлена')" style="flex:1;">Добавить в корзину</button>
+                  <button class="btn" id="addToCartBtn" style="flex:1;">Добавить в корзину</button>
                   <button class="btn secondary" onclick="alert('Функция контактов будет добавлена')" style="flex:1;">Связаться</button>
                 </div>
               </div>
@@ -56,6 +56,20 @@
           `;
 
           document.getElementById('productDetail').innerHTML = html;
+
+          // Обработчик для кнопки "Добавить в корзину"
+          const addToCartBtn = document.getElementById('addToCartBtn');
+          if (addToCartBtn) {
+            addToCartBtn.addEventListener('click', () => {
+              window.cart.addItem(item);
+              addToCartBtn.textContent = '✓ Добавлено в корзину';
+              addToCartBtn.disabled = true;
+              setTimeout(() => {
+                addToCartBtn.textContent = 'Добавить в корзину';
+                addToCartBtn.disabled = false;
+              }, 2000);
+            });
+          }
         })
         .catch(err => {
           document.getElementById('productDetail').innerHTML = `<p style="color:red;">Ошибка: ${err.message}</p><a href="/frontend/listings.html" class="btn">Вернуться</a>`;
