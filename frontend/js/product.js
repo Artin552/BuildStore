@@ -44,7 +44,7 @@
                 <h3 style="margin-top:0;">Готовы купить?</h3>
                 <p class="muted">Свяжитесь с нами или оформите заказ онлайн.</p>
                 <div style="margin-top:16px; display:flex; gap:12px;">
-                  <button class="btn" onclick="alert('Функция заказа будет добавлена')" style="flex:1;">Оформить заказ</button>
+                  <button class="btn" onclick="alert('Функция заказа будет добавлена')" style="flex:1;">Добавить в корзину</button>
                   <button class="btn secondary" onclick="alert('Функция контактов будет добавлена')" style="flex:1;">Связаться</button>
                 </div>
               </div>
