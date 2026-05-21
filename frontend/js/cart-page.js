@@ -5,6 +5,23 @@
 document.addEventListener('DOMContentLoaded', () => {
   const container = document.getElementById('cartContainer');
 
+  container.addEventListener('click', (e) => {
+    const button = e.target.closest('button[data-action]');
+    if (!button) return;
+
+    const itemId = parseInt(button.dataset.itemId);
+    if (!itemId) return;
+
+    const action = button.dataset.action;
+    if (action === 'remove') {
+      removeItem(itemId);
+    } else if (action === 'increment') {
+      incrementQuantity(itemId);
+    } else if (action === 'decrement') {
+      decrementQuantity(itemId);
+    }
+  });
+
   // Функция для отображения корзины
   function renderCart() {
     const items = window.cart.getItems();
@@ -33,13 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="cart-item-title">${item.title}</div>
             <div class="cart-item-price">${item.price || 'По договорённости'} ₽</div>
             <div class="cart-item-quantity">
-              <button class="btn secondary" style="padding: 4px 8px; font-size: 14px;" onclick="decrementQuantity(${item.id})">−</button>
+              <button type="button" class="btn secondary" style="padding: 4px 8px; font-size: 14px;" data-action="decrement" data-item-id="${item.id}">−</button>
               <input type="number" value="${item.quantity || 1}" min="1" class="quantity-input" data-item-id="${item.id}" style="width: 50px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
-              <button class="btn secondary" style="padding: 4px 8px; font-size: 14px;" onclick="incrementQuantity(${item.id})">+</button>
+              <button type="button" class="btn secondary" style="padding: 4px 8px; font-size: 14px;" data-action="increment" data-item-id="${item.id}">+</button>
               <span style="margin-left: 16px; color: #666;">= ${itemTotal.toFixed(2)} ₽</span>
             </div>
           </div>
-          <button class="cart-item-remove" onclick="removeItem(${item.id})">✕ Удалить</button>
+          <button type="button" class="cart-item-remove" data-action="remove" data-item-id="${item.id}">✕ Удалить</button>
         </div>
       `;
     });
@@ -79,6 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quantity > 0) {
           window.cart.updateQuantity(itemId, quantity);
           renderCart();
+        } else {
+          e.target.value = 1;
         }
       });
     });
