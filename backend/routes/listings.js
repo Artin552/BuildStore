@@ -23,6 +23,10 @@ router.get('/', (req, res) => {
   const q = req.query.q;
   const mine = req.query.mine === 'true';
   const user = getUserFromAuthHeader(req);
+  if (mine && !user) {
+    // "мои объявления" без токена — не отдаём общий список, требуем авторизацию
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const category = req.query.category || req.query.cat || '';
   const in_stock = req.query.in_stock === 'true' || req.query.in_stock === '1';
   const onlyDiscount = req.query.discount === 'true' || req.query.discount === '1';
@@ -73,7 +77,9 @@ router.get('/', (req, res) => {
     const total = cRow ? cRow.cnt : 0;
 
     const offset = (page - 1) * limit;
-    const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id ${baseSql} ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    // Поля in_stock/rating/discount/reviewsCount/is_hot/tags используются фильтрами
+    // и бейджами фронтенда — не отдавать их здесь означает сломанные фильтры на клиенте
+    const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id, discount, rating, reviewsCount, in_stock, is_hot, tags ${baseSql} ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
     const finalParams = params.concat([limit, offset]);
     db.all(sql, finalParams, (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
@@ -87,7 +93,7 @@ router.get('/', (req, res) => {
 // Get single listing by id
 router.get('/:id', (req, res) => {
   const id = req.params.id;
-  db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id FROM listings WHERE id = ?', [id], (err, row) => {
+  db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id, discount, rating, reviewsCount, in_stock, is_hot, tags FROM listings WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row) return res.status(404).json({ error: 'Not found' });
     res.json(formatListing(row));

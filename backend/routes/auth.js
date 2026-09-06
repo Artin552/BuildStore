@@ -43,16 +43,24 @@ if (EMAIL_HOST && EMAIL_PORT && EMAIL_USER && EMAIL_PASS) {
 router.post('/register', (req, res) => {
   const { name, email, password } = req.body;
 
+  if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
+
   // Валидация email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: 'Некорректный email' });
   }
 
-  if (!email || !password) return res.status(400).json({ error: 'Email и пароль обязательны' });
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'Пароль должен содержать минимум 6 символов' });
+  }
 
   // проверим, нет ли уже такого email
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, row) => {
+    if (err) {
+      console.error('DB error in /register:', err);
+      return res.status(500).json({ error: 'Ошибка при регистрации' });
+    }
     if (row) return res.status(400).json({ error: 'Пользователь уже существует' });
 
     const hash = await bcrypt.hash(password, 10);
@@ -73,7 +81,15 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
+    return res.status(400).json({ success: false, error: 'Неверный логин или пароль' });
+  }
+
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+    if (err) {
+      console.error('DB error in /login:', err);
+      return res.status(500).json({ success: false, error: 'Ошибка входа' });
+    }
     if (!user) return res.status(401).json({ success: false, error: 'Неверный логин или пароль' });
 
     const match = await bcrypt.compare(password, user.password);
@@ -81,7 +97,9 @@ router.post('/login', (req, res) => {
 
     const token = jwt.sign({ id: user.id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ success: true, user, token });
+    // Отдаём только безопасные поля — ни в коем случае не хеш пароля и reset_token
+    const safeUser = { id: user.id, name: user.name, email: user.email };
+    res.json({ success: true, user: safeUser, token });
   });
 });
 
@@ -100,9 +118,10 @@ router.post('/forgot', (req, res) => {
 
     // генерируем 6-значный код
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    // сохраняем код и метку времени
+    // сохраняем ХЕШ кода и метку времени (не храним код в открытом виде)
+    const codeHash = await bcrypt.hash(code, 10);
     const now = Date.now();
-    db.run('UPDATE users SET reset_token = ?, reset_requested_at = ? WHERE id = ?', [code, now, user.id], (err2) => {
+    db.run('UPDATE users SET reset_token = ?, reset_requested_at = ? WHERE id = ?', [codeHash, now, user.id], (err2) => {
       if (err2) {
         console.error('Не удалось сохранить код сброса пароля', err2);
         // still return generic message to avoid leaking info
@@ -139,14 +158,23 @@ router.post('/reset', async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) return res.status(400).json({ error: 'Код и новый пароль обязательны' });
 
-  db.get('SELECT * FROM users WHERE reset_token = ?', [token], async (err, user) => {
-    if (!user) return res.status(400).json({ error: 'Неверный код' });
+  if (typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'Пароль должен содержать минимум 6 символов' });
+  }
 
-    // проверим TTL: 15 минут
+  // Код хранится в виде bcrypt-хеша, поэтому ищем среди всех пользователей
+  // с активным запросом на сброс и сверяем код с каждым хешем
+  db.all('SELECT * FROM users WHERE reset_token IS NOT NULL AND reset_token != \'\'', [], async (err, users) => {
+    if (err || !users || users.length === 0) return res.status(400).json({ error: 'Неверный код' });
+
+    // проверяем TTL: 15 минут
     const now = Date.now();
-    if (!user.reset_requested_at || (now - Number(user.reset_requested_at)) > (15 * 60 * 1000)) {
-      return res.status(400).json({ error: 'Срок действия кода истёк' });
-    }
+    const user = users.find(u =>
+      u.reset_requested_at &&
+      (now - Number(u.reset_requested_at)) <= (15 * 60 * 1000) &&
+      bcrypt.compareSync(String(token), u.reset_token)
+    );
+    if (!user) return res.status(400).json({ error: 'Неверный код или срок действия кода истёк' });
 
     const hash = await bcrypt.hash(password, 10);
     db.run('UPDATE users SET password = ?, reset_token = NULL, reset_requested_at = NULL WHERE id = ?', [hash, user.id], (err2) => {
@@ -162,7 +190,7 @@ router.post('/avatar', async (req, res) => {
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
   const { imageBase64 } = req.body;
-  if (!imageBase64.startsWith('data:image')) {
+  if (!imageBase64 || !imageBase64.startsWith('data:image')) {
     return res.status(400).json({ error: 'Invalid image' });
   }
 

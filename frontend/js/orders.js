@@ -2,6 +2,13 @@
 // ЛОГИКА СТРАНИЦЫ ЗАКАЗОВ (orders.js)
 // ============================================================
 
+// Экранирование HTML — названия объявлений вводят пользователи (защита от XSS)
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   const container = document.getElementById('ordersContainer');
@@ -79,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           itemsHtml += `
             <div class="order-item-row">
               <div class="order-item-name">
-                ${item.title || 'Товар'} × ${item.quantity || 1}
+                ${escHtml(item.title || 'Товар')} × ${item.quantity || 1}
               </div>
               <div>${item.price_at_purchase || '—'} ₽</div>
             </div>
@@ -129,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.error('Error loading orders:', error);
     container.innerHTML = `
       <div style="text-align: center; padding: 40px; color: red;">
-        <p>Ошибка загрузки заказов: ${error.message}</p>
+        <p>Ошибка загрузки заказов: ${escHtml(error.message)}</p>
         <a href="/frontend/orders.html" class="btn secondary" style="margin-top: 16px;">Попробовать снова</a>
       </div>
     `;
@@ -159,10 +166,10 @@ window.viewOrderDetails = async function(orderId) {
         const imgUrl = item.imagePath || `https://picsum.photos/seed/${encodeURIComponent(item.title)}/150/150`;
         itemsHtml += `
           <div style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee;">
-            <img src="${imgUrl}" alt="${item.title}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+            <img src="${imgUrl}" alt="${escHtml(item.title)}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
             <div style="flex: 1;">
-              <div style="font-weight: 600;">${item.title || 'Товар'}</div>
-              <div style="color: #999; font-size: 14px;">Категория: ${item.category || '—'}</div>
+              <div style="font-weight: 600;">${escHtml(item.title || 'Товар')}</div>
+              <div style="color: #999; font-size: 14px;">Категория: ${escHtml(item.category || '—')}</div>
               <div style="margin-top: 4px;">
                 <span style="color: var(--primary); font-weight: 600;">${item.price_at_purchase || '—'} ₽</span>
                 <span style="color: #999;"> × ${item.quantity || 1}</span>

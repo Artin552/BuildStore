@@ -61,11 +61,11 @@ db.serialize(() => {
     if (err) return console.error('DB pragma error', err);
     const names = (cols || []).map(c => c.name);
     const adds = [];
-    if (!names.includes('owner_id')) adds.push("ALTER TABLE listings ADD COLUMN owner_id INTEGER DEFAULT NULLidx_listings_category");
+    if (!names.includes('owner_id')) adds.push("ALTER TABLE listings ADD COLUMN owner_id INTEGER DEFAULT NULL");
     if (!names.includes('discount')) adds.push("ALTER TABLE listings ADD COLUMN discount INTEGER DEFAULT 0");
     if (!names.includes('rating')) adds.push("ALTER TABLE listings ADD COLUMN rating REAL DEFAULT 0");
     if (!names.includes('reviewsCount')) adds.push("ALTER TABLE listings ADD COLUMN reviewsCount INTEGER DEFAULT 0");
-    if (!names.includes('in_stock')) adds.push("ALTER TABLE listings ADD COLUMN in_stock INTEGER DEFAULT 0");
+    if (!names.includes('in_stock')) adds.push("ALTER TABLE listings ADD COLUMN in_stock INTEGER DEFAULT 1");
     if (!names.includes('is_hot')) adds.push("ALTER TABLE listings ADD COLUMN is_hot INTEGER DEFAULT 0");
     if (!names.includes('tags')) adds.push("ALTER TABLE listings ADD COLUMN tags TEXT");
     adds.forEach(a => {

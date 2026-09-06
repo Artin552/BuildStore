@@ -84,14 +84,13 @@
       
     <!-- Поиск товаров с фильтром по категориям -->
     <div class="hero-search">
-        <select id="heroCategory">
+          <form action="/frontend/listings.html" method="GET" style="display: flex; gap: 8px; width: 100%;">
+        <select id="heroCategory" name="category">
           <option value="">Выберите категорию</option>
           <option>Материалы</option>
           <option>Инструменты</option>
           <option>Техника</option>
         </select>
-
-      <form action="/frontend/listings.html" method="GET" style="display: flex; gap: 8px; width: 100%;">
         <input name="q" placeholder="Найти" style="flex: 1;">
         <button type="submit" class="btn">🔍 Найти</button>
       </form>

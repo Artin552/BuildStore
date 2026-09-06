@@ -11,10 +11,11 @@ This is a small marketplace demo (Node/Express backend + static frontend). Quick
 - ✅ История заказов пользователя
 - ✅ API для управления заказами
 
-**[📖 Полная документация](./CART_IMPLEMENTATION.md)** | **[🚀 Быстрый старт](./CART_QUICK_START.md)** | **[💻 Примеры кода](./CODE_EXAMPLES.md)**
+**[📖 Полная документация](./document/DOCUMENTATION.md)** | **[🚀 Быстрый старт](./QUICK_START.md)** | **[🏗 Архитектура](./document/ARCHITECTURE.md)**
 
 ## Required env variables
 - `JWT_SECRET` — secret for signing JWT (development fallback exists but set in production!) 
+- `ALLOWED_ORIGIN` — origin allowed by CORS, e.g. `https://mydomain.ru` (unset = allow all, dev only)
 - `HOST` — host to bind (default `127.0.0.1`)
 - `PORT` — port (default `4000`)
 - `JSON_LIMIT` — max JSON body size (default `2mb`)
@@ -46,15 +47,10 @@ BuildStoreNET/
 │   ├── orders.html      # 🆕 My orders page
 │   ├── img/             # Images and videos
 │   └── ...
+├── document/            # Documentation (architecture, guides)
 ├── tests/               # Test suite
 ├── uploads/             # User-uploaded images
 ├── index.html          # Main landing page
-├── CART_IMPLEMENTATION.md  # 🆕 Cart documentation
-├── CART_QUICK_START.md     # 🆕 Quick start guide
-├── CODE_EXAMPLES.md        # 🆕 Code examples
-├── ARCHITECTURE.md         # 🆕 Architecture diagrams
-├── IMPLEMENTATION_SUMMARY.md # 🆕 Change summary
-├── test-integration.js     # 🆕 Integration test
 └── ...
 ```
 
@@ -116,6 +112,7 @@ node tests/smoke_test_search.js
 
 ## Environment Variables
 - `JWT_SECRET` — secret for signing JWT (development fallback exists)
+- `ALLOWED_ORIGIN` — origin allowed by CORS, e.g. `https://mydomain.ru` (unset = allow all, dev only)
 - `HOST` — host to bind (default `127.0.0.1`)
 - `PORT` — port (default `4000`)
 - `JSON_LIMIT` — max JSON body size (default `2mb`)

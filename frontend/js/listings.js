@@ -16,15 +16,30 @@ let allListings = [];
 async function fetchAllListings() {
   try {
     console.log('📡 Загружаю товары с сервера...');
-    const response = await fetch('/api/listings?limit=1000');
-    
-    if (!response.ok) {
-      throw new Error('Ошибка при получении ответа от сервера');
+    // Сервер ограничивает limit до 100, поэтому грузим постранично
+    const PAGE_SIZE = 100;
+    const MAX_PAGES = 50; // защита от бесконечного цикла
+    allListings = [];
+
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const response = await fetch(`/api/listings?limit=${PAGE_SIZE}&page=${page}`);
+
+      if (!response.ok) {
+        throw new Error('Ошибка при получении ответа от сервера');
+      }
+
+      const batch = await response.json();
+      allListings = allListings.concat(batch);
+
+      const headerTotal = Number(response.headers.get('X-Total-Count'));
+      const total = Number.isFinite(headerTotal) && headerTotal > 0 ? headerTotal : allListings.length;
+
+      // Последняя страница: вернулось меньше, чем запрашивали
+      if (batch.length < PAGE_SIZE || allListings.length >= total) break;
     }
-    
-    allListings = await response.json();
+
     console.log(`✅ Загружено ${allListings.length} товаров`);
-    
+
     return allListings;
   } catch (error) {
     console.error('❌ Ошибка при загрузке товаров:', error);
@@ -563,14 +578,15 @@ async function initPage() {
   // 🔍 Шаг 1: проверяем, есть ли поисковый запрос в URL
   const urlParams = new URLSearchParams(window.location.search);
   const searchQuery = urlParams.get('q'); // например: "молоток"
+  const searchCategory = urlParams.get('category') || ''; // категория из формы на главной
 
   // 📥 Шаг 2: загружаем все объявления
   await fetchAllListings();
 
   // 🔍 Шаг 3: если есть запрос — показываем поиск
   if (searchQuery) {
-    showSearchResults(searchQuery);
-  } 
+    showSearchResults(searchQuery, searchCategory);
+  }
   // 🗂️ Шаг 4: если нет — показываем категории
   else {
     const categories = getCategories(allListings);
@@ -578,20 +594,28 @@ async function initPage() {
   }
 }
 
-function showSearchResults(query) {
+function showSearchResults(query, category) {
+  const q = (query || '').toLowerCase();
+  const cat = (category || '').toLowerCase();
+
   // Фильтруем все товары по запросу (в названии, описании, категории)
-  const filtered = allListings.filter(item =>
-    (item.title || '').toLowerCase().includes(query.toLowerCase()) ||
-    (item.description || '').toLowerCase().includes(query.toLowerCase()) ||
-    (item.category || '').toLowerCase().includes(query.toLowerCase())
-  );
+  // и, если задана, по выбранной категории
+  const filtered = allListings.filter(item => {
+    if (cat && (item.category || '').toLowerCase() !== cat) return false;
+    return (
+      (item.title || '').toLowerCase().includes(q) ||
+      (item.description || '').toLowerCase().includes(q) ||
+      (item.category || '').toLowerCase().includes(q)
+    );
+  });
 
   // Скрываем категории
   document.getElementById('categoriesSection').style.display = 'none';
 
   // Показываем товары
   document.getElementById('productsSection').style.display = 'block';
-  document.getElementById('categoryTitle').textContent = `Результаты поиска: "${query}"`;
+  document.getElementById('categoryTitle').textContent =
+    `Результаты поиска: "${query}"` + (category ? ` — ${category}` : '');
   document.getElementById('backBtn').textContent = '← Вернуться к категориям';
 
   // Отключаем фильтры (или оставь, если хочешь)

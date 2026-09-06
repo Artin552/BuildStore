@@ -988,10 +988,14 @@ body.my-listings-page .card .card-actions button {
 /* -------------------------------------------------------------------------- */
 
 @media (min-width: 769px) {
-  .hero-search {
+  /* select, input и кнопка лежат внутри <form>, поэтому grid применяем к ней:
+     категория слева (фикс. ширина), поле ввода растягивается (1fr), кнопка справа */
+  .hero-search form {
     display: grid;
     grid-template-columns: 180px 1fr auto;
     gap: 8px;
+    width: 100%;
+    align-items: center;
   }
   .hero-search select {
     min-width: 180px;
@@ -1007,9 +1011,11 @@ body.my-listings-page .card .card-actions button {
 }
 
 @media (max-width: 768px) {
-  .hero-search {
+  .hero-search form {
+    display: flex;
     flex-direction: column;
-    padding: 12px;
+    gap: 10px;
+    width: 100%;
   }
   .hero-search select,
   .hero-search input,

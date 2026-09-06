@@ -38,14 +38,27 @@ process.on('unhandledRejection', (reason) => {
 const app = express();
 const PORT = process.env.PORT || 4000; // Портт по умолчанию 4000
 
+// За nginx указывайте TRUST_PROXY=1 — тогда express-rate-limit увидит
+// реальный IP клиента из X-Forwarded-For, а не IP самого nginx
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', Number(process.env.TRUST_PROXY) || 1);
+}
+
 // ============================================================
 // MIDDLEWARE (промежуточные обработчики запросов)
 // ============================================================
-// Включаем CORS (Cross-Origin Resource Sharing) для доступа с разных доменов
-app.use(cors());
+// Включаем CORS (Cross-Origin Resource Sharing) для доступа с разных доменов.
+// В продакшене задайте ALLOWED_ORIGIN, например: https://mydomain.ru
+const allowedOrigin = process.env.ALLOWED_ORIGIN;
+app.use(cors(allowedOrigin ? { origin: allowedOrigin } : {}));
 
 // Включаем Helmet для защиты от уязвимостей в HTTP заголовках
 app.use(helmet());
+
+// Предупреждение о секретах (не падаем, чтобы не ломать локальную разработку)
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  JWT_SECRET не задан — используется fallback из routes/auth.js. Для продакшена задайте JWT_SECRET в .env!');
+}
 
 // Ограничиваем размер JSON тела запроса до 2MB (защита от DoS атак)
 app.use(express.json({ limit: process.env.JSON_LIMIT || '2mb' }));
@@ -72,6 +85,15 @@ const forgotLimiter = rateLimit({
 });
 app.use('/api/auth/forgot', forgotLimiter);
 
+// Строгий rate limiter для /reset — защита от подбора 6-значного кода сброса
+// Лимит: максимум 5 попыток каждые 15 минут (у кода TTL те же 15 минут)
+const resetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many reset attempts, please request a new code later' }
+});
+app.use('/api/auth/reset', resetLimiter);
+
 // ============================================================
 // ЛОГИРОВАНИЕ ЗАПРОСОВ
 // ============================================================
@@ -81,16 +103,6 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
   }
   next();
-});
-
-// ============================================================
-// ОБЩИЙ ОБРАБОТЧИК ОШИБОК
-// ============================================================
-// Ловит необработанные ошибки в маршрутах
-app.use((err, req, res, next) => {
-  console.error('Unhandled route error:', err && err.stack ? err.stack : err);
-  if (res.headersSent) return next(err); // Если уже был отправлен ответ, пропускаем
-  res.status(500).json({ error: 'Internal server error' });
 });
 
 // ============================================================
@@ -104,6 +116,36 @@ app.use('/api/listings', listingsRoutes);
 
 // Все маршруты заказов начинаются с /api/orders
 app.use('/api/orders', ordersRoutes);
+
+// ============================================================
+// ОБЩИЙ ОБРАБОТЧИК ОШИБОК
+// ============================================================
+// ВАЖНО: регистрируется ПОСЛЕ маршрутов, иначе Express не передаёт
+// в него ошибки, возникшие в обработчиках маршрутов
+// (например, ошибки парсинга JSON тела или throw в роутах)
+app.use((err, req, res, next) => {
+  console.error('Unhandled route error:', err && err.stack ? err.stack : err);
+  if (res.headersSent) return next(err); // Если уже был отправлен ответ, пропускаем
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+  if (err && err.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'Request body too large' });
+  }
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// ============================================================
+// ЗАЩИТА ОТ УТЕЧКИ БАЗЫ ДАННЫХ
+// ============================================================
+// Блокируем любые запросы к .db-файлам ДО раздачи статики,
+// чтобы users.db и подобные файлы никогда не отдавались наружу
+app.use((req, res, next) => {
+  if (req.url.includes('.db')) {
+    return res.status(403).send('Forbidden');
+  }
+  next();
+});
 
 // ============================================================
 // РАЗДАЧА СТАТИЧЕСКИХ ФАЙЛОВ (фронтенд)
@@ -140,19 +182,15 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), {
   app.get('/my-listings.html', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'my-listings.html'));
   });
-// Защита от утечки базы данных
-app.use((req, res, next) => {
-  if (req.url.includes('.db')) {
-    return res.status(403).send('Forbidden');
-  }
-  next();
-});
-
+// Защита от утечки базы данных: основной блок находится выше, до статики
 console.log('Frontend path:', path.join(__dirname, '..', 'frontend'));
 console.log('Root path:', path.join(__dirname, '..'));
 // Раздаём все остальные файлы из папки frontend (HTML файлы и т.д.)
 // ВАЖНО: это НЕ раздаёт репозиторий корень (.env, server.js, *.db)
-app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend')));
+// Статика подключена и с корня, и с префикса /frontend, чтобы работали
+// и ссылки вида /auth.html, и редиректы вида /frontend/auth.html
+app.use('/frontend', express.static(path.join(__dirname, '..', 'frontend'), { index: false }));
+app.use(express.static(path.join(__dirname, '..', 'frontend'), { index: false }));
 
 
 

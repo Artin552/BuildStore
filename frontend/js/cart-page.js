@@ -22,6 +22,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Экранирование HTML — названия объявлений вводят пользователи (защита от XSS)
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   // Функция для отображения корзины
   function renderCart() {
     const items = window.cart.getItems();
@@ -45,9 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
       itemsHtml += `
         <div class="cart-item" data-item-id="${item.id}">
-          <img src="${imgUrl}" alt="${item.title}" class="cart-item-image">
+          <img src="${imgUrl}" alt="${esc(item.title)}" class="cart-item-image">
           <div class="cart-item-info">
-            <div class="cart-item-title">${item.title}</div>
+            <div class="cart-item-title">${esc(item.title)}</div>
             <div class="cart-item-price">${item.price || 'По договорённости'} ₽</div>
             <div class="cart-item-quantity">
               <button type="button" class="btn secondary" style="padding: 4px 8px; font-size: 14px;" data-action="decrement" data-item-id="${item.id}">−</button>
@@ -65,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="cart-summary">
         <div class="cart-summary-row">
           <span>Товаров:</span>
-          <span>${items.length}</span>
+          <span>${items.reduce((n, it) => n + (it.quantity || 1), 0)}</span>
         </div>
         <div class="cart-summary-row">
           <span>Подитог:</span>

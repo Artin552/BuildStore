@@ -17,7 +17,8 @@ registerForm.addEventListener('submit', async (e) => {
     const data = await res.json();
     if (data.success) {
       if (data.token) sessionStorage.setItem('token', data.token);
-      if (data.email) sessionStorage.setItem('userEmail', data.email);
+      // бэкенд возвращает { success, user: { id, name, email }, token }
+      if (data.user && data.user.email) sessionStorage.setItem('userEmail', data.user.email);
       window.location.href = data.redirect || '/';
     } else {
       alert(data.error || 'Ошибка регистрации');

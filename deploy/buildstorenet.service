@@ -1,0 +1,29 @@
+# ============================================================
+# systemd unit для BuildStoreNET
+# Установка:
+#   sudo cp buildstorenet.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now buildstorenet
+# ============================================================
+[Unit]
+Description=BuildStoreNET marketplace (Node/Express + SQLite)
+After=network.target
+
+[Service]
+Type=simple
+# !!! Проверьте пути: пользователи обычно кладут проект в /opt или в домашний каталог
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/buildstorenet/backend
+EnvironmentFile=/opt/buildstorenet/backend/.env
+ExecStart=/usr/bin/node /opt/buildstorenet/backend/server.js
+Restart=on-failure
+RestartSec=5
+# Немного ужесточим права процесса
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/buildstorenet/backend /opt/buildstorenet/uploads
+
+[Install]
+WantedBy=multi-user.target

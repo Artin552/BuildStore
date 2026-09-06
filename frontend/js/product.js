@@ -1,3 +1,11 @@
+  // Экранирование HTML — названия/описания объявлений вводят пользователи,
+  // без этого возможен stored XSS через innerHTML
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   // Получить id товара из URL
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('id');
@@ -19,18 +27,18 @@
           const html = `
             <div class="listing-detail" style="max-width:800px; margin:0 auto;">
               <div class="listing-header">
-                <div class="listing-title" style="font-size:28px; font-weight:bold; margin-bottom:8px;">${item.title || ''}</div>
+                <div class="listing-title" style="font-size:28px; font-weight:bold; margin-bottom:8px;">${esc(item.title)}</div>
                 <div class="listing-date muted small">${dateStr}</div>
               </div>
 
               <div class="listing-image-wrapper" style="margin:24px 0;">
-                <img class="listing-image" src="${imgUrl}" alt="${item.title || ''}" style="max-width:100%; border-radius:8px;">
+                <img class="listing-image" src="${imgUrl}" alt="${esc(item.title)}" style="max-width:100%; border-radius:8px;">
               </div>
 
               <div class="listing-body" style="margin:24px 0;">
-                <div class="listing-desc" style="font-size:16px; line-height:1.6; margin-bottom:16px;">${item.description || ''}</div>
+                <div class="listing-desc" style="font-size:16px; line-height:1.6; margin-bottom:16px;">${esc(item.description)}</div>
                 <div class="listing-meta muted small">
-                  <strong>Категория:</strong> ${item.category || 'Не указана'}
+                  <strong>Категория:</strong> ${esc(item.category || 'Не указана')}
                 </div>
               </div>
 
@@ -72,7 +80,7 @@
           }
         })
         .catch(err => {
-          document.getElementById('productDetail').innerHTML = `<p style="color:red;">Ошибка: ${err.message}</p><a href="/frontend/listings.html" class="btn">Вернуться</a>`;
+          document.getElementById('productDetail').innerHTML = `<p style="color:red;">Ошибка: ${esc(err.message)}</p><a href="/frontend/listings.html" class="btn">Вернуться</a>`;
         });
     }
 

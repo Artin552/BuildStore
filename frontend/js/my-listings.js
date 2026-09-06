@@ -6,9 +6,22 @@ async function loadMyListings() {
 
   try {
     const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    if (!token) {
+      // без токена бэкенд вернёт 401 на mine=true — сразу отправляем на вход
+      window.location.href = '/frontend/auth.html';
+      return;
+    }
     const res = await fetch('/api/listings?mine=true', {
-      headers: token ? { Authorization: 'Bearer ' + token } : {}
+      headers: { Authorization: 'Bearer ' + token }
     });
+
+    if (res.status === 401) {
+      // токен протух/невалиден — просим войти заново
+      sessionStorage.removeItem('token');
+      window.location.href = '/frontend/auth.html';
+      return;
+    }
+
     const data = await res.json();
 
     root.innerHTML = '';

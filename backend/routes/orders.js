@@ -9,66 +9,102 @@ router.post('/', (req, res) => {
   const user = getUserFromAuthHeader(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { items, total } = req.body;
-  
+  const { items } = req.body;
+
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Items array is required and cannot be empty' });
   }
 
-  if (!total) {
-    return res.status(400).json({ error: 'Total is required' });
+  // Валидация позиций: нужен id и положительное целое количество
+  const normalized = [];
+  for (const item of items) {
+    const id = Number(item && item.id);
+    const quantity = Math.floor(Number(item && item.quantity) || 1);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: 'Each item must have a valid id' });
+    }
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 999) {
+      return res.status(400).json({ error: 'Item quantity must be between 1 and 999' });
+    }
+    normalized.push({ id, quantity });
   }
 
-  const createdAt = Date.now();
-  
-  // Вставляем заказ
-  db.run(
-    'INSERT INTO orders (user_id, total, status, created_at) VALUES (?, ?, ?, ?)',
-    [user.id, total, 'pending', createdAt],
-    function(err) {
+  // Цены и итоговую сумму берём ТОЛЬКО из БД — данные клиента не доверенные.
+  // Клиентский total игнорируется и не сохраняется.
+  const placeholders = normalized.map(() => '?').join(',');
+  const itemIds = normalized.map(i => i.id);
+  db.all(
+    `SELECT id, CAST(price AS REAL) AS price FROM listings WHERE id IN (${placeholders})`,
+    itemIds,
+    (err, rows) => {
       if (err) {
-        console.error('Error creating order:', err);
+        console.error('Error fetching listing prices:', err);
         return res.status(500).json({ error: 'Failed to create order' });
       }
 
-      const orderId = this.lastID;
-      
-      // Вставляем товары в заказ
-      let inserted = 0;
-      let hasError = false;
+      const priceById = new Map((rows || []).map(r => [r.id, r.price]));
+      const missing = normalized.filter(i => !priceById.has(i.id));
+      if (missing.length > 0) {
+        return res.status(400).json({ error: 'Some items do not exist' });
+      }
 
-      items.forEach((item) => {
-        db.run(
-          'INSERT INTO order_items (order_id, listing_id, quantity, price_at_purchase, created_at) VALUES (?, ?, ?, ?, ?)',
-          [orderId, item.id, item.quantity || 1, item.price, createdAt],
-          (err) => {
-            if (err) {
-              console.error('Error inserting order item:', err);
-              hasError = true;
-            }
-            inserted++;
+      const total = normalized.reduce(
+        (sum, i) => sum + (priceById.get(i.id) || 0) * i.quantity,
+        0
+      );
 
-            // Когда все товары вставлены
-            if (inserted === items.length) {
-              if (hasError) {
-                return res.status(500).json({ error: 'Error adding some items to order' });
-              }
+      const createdAt = Date.now();
 
-              // Возвращаем созданный заказ
-              db.get(
-                'SELECT * FROM orders WHERE id = ?',
-                [orderId],
-                (err, order) => {
-                  if (err) {
-                    return res.status(500).json({ error: 'Failed to fetch order' });
-                  }
-                  res.status(201).json(order);
-                }
-              );
-            }
+      // Вставляем заказ
+      db.run(
+        'INSERT INTO orders (user_id, total, status, created_at) VALUES (?, ?, ?, ?)',
+        [user.id, total.toFixed(2), 'pending', createdAt],
+        function(err) {
+          if (err) {
+            console.error('Error creating order:', err);
+            return res.status(500).json({ error: 'Failed to create order' });
           }
-        );
-      });
+
+          const orderId = this.lastID;
+
+          // Вставляем товары в заказ с ценой из БД
+          let inserted = 0;
+          let hasError = false;
+
+          normalized.forEach((item) => {
+            db.run(
+              'INSERT INTO order_items (order_id, listing_id, quantity, price_at_purchase, created_at) VALUES (?, ?, ?, ?, ?)',
+              [orderId, item.id, item.quantity, (priceById.get(item.id) || 0).toFixed(2), createdAt],
+              (err) => {
+                if (err) {
+                  console.error('Error inserting order item:', err);
+                  hasError = true;
+                }
+                inserted++;
+
+                // Когда все товары вставлены
+                if (inserted === normalized.length) {
+                  if (hasError) {
+                    return res.status(500).json({ error: 'Error adding some items to order' });
+                  }
+
+                  // Возвращаем созданный заказ
+                  db.get(
+                    'SELECT * FROM orders WHERE id = ?',
+                    [orderId],
+                    (err, order) => {
+                      if (err) {
+                        return res.status(500).json({ error: 'Failed to fetch order' });
+                      }
+                      res.status(201).json(order);
+                    }
+                  );
+                }
+              }
+            );
+          });
+        }
+      );
     }
   );
 });
