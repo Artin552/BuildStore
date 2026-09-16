@@ -18,9 +18,9 @@
     "express-rate-limit": "^6.11.2",
     "helmet": "^7.2.0",
     "jsonwebtoken": "^9.0.2",
-  "file-type": "^16.5.4",
+    "file-type": "^16.5.4",
     "node-fetch": "^2.6.7",
     "nodemailer": "^6.9.4",
-    "sqlite3": "^5.1.7"
+    "pg": "^8.11.3"
   }
 }
