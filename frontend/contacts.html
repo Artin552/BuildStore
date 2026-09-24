@@ -4,131 +4,46 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Контакты — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/cart.js" defer></script>
+
   <style>
-    /* Минималистичные стили */
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #0f0f1b;
-      color: #fff;
-      line-height: 1.6;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-
+    /* Специфичные для страницы контакты стили поверх дизайн-системы */
+    .contacts-main { padding-top: 32px; padding-bottom: 48px; }
+    .contacts-header { text-align: center; margin-bottom: 32px; }
+    .contacts-header p { color: var(--muted, #6b7280); max-width: 560px; margin: 8px auto 0; }
     .card {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
+      background: var(--card, #fff);
+      border-radius: var(--radius, 12px);
       padding: 30px;
       text-align: center;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--shadow);
+      max-width: 480px;
+      margin: 0 auto;
     }
-
     .avatar {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      background: #2c2c44;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 2rem;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(26, 54, 93, .08);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; color: var(--primary);
     }
-
-    .name {
-      font-size: 1.8rem;
-      margin: 10px 0;
-    }
-
-    .role {
-      color: #aaa;
-      margin-bottom: 20px;
-    }
-
-    .contact-links {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 20px;
-    }
-
+    .name { font-size: 1.6rem; margin: 10px 0; font-weight: 800; }
+    .role { color: var(--muted, #6b7280); margin-bottom: 20px; }
+    .contact-links { display: flex; justify-content: center; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
     .contact-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      color: #fff;
-      text-decoration: none;
-      transition: background 0.2s;
+      display: inline-flex; align-items: center; gap: 8px;
+      min-height: 44px; padding: 10px 20px;
+      border-radius: 12px; text-decoration: none;
+      background: var(--primary); color: #fff;
     }
-
-    .contact-link:hover {
-      background: rgba(255, 255, 255, 0.15);
-    }
-
-    .contact-link svg {
-      width: 20px;
-      height: 20px;
-    }
-
+    .contact-link:hover { filter: brightness(1.08); color: #fff; }
+    .contact-link svg { width: 20px; height: 20px; }
     @media (max-width: 600px) {
-      .contact-links {
-        flex-direction: column;
-        gap: 10px;
-      }
-      .contact-link {
-        justify-content: center;
-      }
+      .contact-links { flex-direction: column; gap: 10px; }
+      .contact-link { justify-content: center; }
     }
   </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Контакты</h1>
-      <p>Связь с разработчиком проекта</p>
-    </header>
-
-    <div class="card">
-      <div class="avatar">👨‍💻</div>
-      <div class="name">Артём Пронин</div>
-      <div class="role">Студент, фронтенд-разработчик</div>
-      
-      <div class="contact-links">
-        <a href="https://t.me/Artin552" class="contact-link" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.307 15.129c-.055.323-.218.518-.512.518-.128 0-.25-.036-.632-.203l-1.927-.823-1.084 2.03c-.196.37-.355.458-.676.458-.093 0-.18-.01-.26-.023l.342-1.956 2.255-9.127c.074-.302.24-.425.49-.425.125 0 .222.032.302.112l3.067 3.076c.196.256.11.515-.202.617l-2.068.672 1.38 1.39c.232.237.263.44.055.684l-1.684 1.953z"/>
-          </svg>
-          Написать в Telegram
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- JS не обязателен, но можно добавить для аналитики или защиты почты -->
-  <script>
-    // Защита от спам-ботов (опционально)
-    document.addEventListener('DOMContentLoaded', () => {
-      // Например, можно динамически подставить username, если нужно
-    });
-  </script>
-</body>
-</html>

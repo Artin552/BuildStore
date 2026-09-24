@@ -3,34 +3,132 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Вход / Регистрация — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/reg.js" defer></script>
+  <title>Регистрация — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/reg.js" defer></script>
 </head>
 <body>
-  <main class="auth-container">
-    <h2>Регистрация</h2>
-    <form id="registerForm" class="auth-form">
-      <div class="form__group">
-        <input class="form__field" id="rname" name="name" placeholder="Имя и фамилия" required />
+  <main class="auth-container" style="max-width:720px; margin:0 auto; padding:32px 16px;">
+    <h1 style="font-size:28px; margin-bottom:8px;">Регистрация</h1>
+    <p class="text-muted" style="margin-bottom:24px;">Кто вы? От этого зависит набор полей и проверка документов.</p>
 
+    <!-- Шаг 1: выбор типа аккаунта (ТЗ 5.1) -->
+    <div class="account-type-grid" role="radiogroup" aria-label="Тип аккаунта">
+      <label class="account-type-card">
+        <input type="radio" name="accountType" value="person" checked>
+        <span class="account-type-title">Частное лицо</span>
+        <span class="account-type-desc">Упрощённая регистрация: имя, e-mail, пароль. Аккаунт активен сразу.</span>
+      </label>
+      <label class="account-type-card">
+        <input type="radio" name="accountType" value="organization">
+        <span class="account-type-title">Организация / ИП</span>
+        <span class="account-type-desc">Понадобятся ИНН, ОГРН, юридический адрес и документы. После подачи — проверка модератором.</span>
+      </label>
+    </div>
+
+    <form id="registerForm" class="auth-form" novalidate>
+      <div class="form__group">
+        <label class="form__label" for="rname">Имя<span style="color:#c92a2a;">*</span></label>
+        <input class="form__field" id="rname" name="name" placeholder="Как к вам обращаться" autocomplete="name" required />
+        <div class="field-error" data-error-for="rname"></div>
       </div>
 
       <div class="form__group">
-        <input class="form__field" id="remail" name="email" placeholder="Email" type="email" required />
-   
+        <label class="form__label" for="remail">E-mail для входа<span style="color:#c92a2a;">*</span></label>
+        <input class="form__field" id="remail" name="email" placeholder="you@example.ru" type="email" autocomplete="email" required />
+        <div class="field-error" data-error-for="remail"></div>
       </div>
 
       <div class="form__group">
-        <input class="form__field" id="rpassword" name="password" placeholder="Пароль" type="password" minlength="6" required />
-        <button type="button" class="icon-btn" id="toggleRPassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:28px; background:transparent; border:none; font-size:14px">👁️</button>
+        <label class="form__label" for="rpassword">Пароль<span style="color:#c92a2a;">*</span></label>
+        <div style="position:relative;">
+          <input class="form__field" id="rpassword" name="password" placeholder="Минимум 6 символов" type="password" minlength="6" autocomplete="new-password" required />
+          <button type="button" class="icon-btn" id="toggleRPassword" aria-label="Показать пароль" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); background:transparent; border:none; min-height:44px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="field-error" data-error-for="rpassword"></div>
       </div>
-      <div class="auth-btns">
-        <button class="btn" type="submit">Зарегистрироваться</button>
+
+      <!-- Расширенная форма организации (ТЗ 5.2), скрыта для частного лица -->
+      <section id="orgFields" class="org-fields" hidden aria-label="Данные организации">
+        <h2 style="font-size:20px; margin:16px 0 8px;">Данные компании</h2>
+
+        <div class="form__group">
+          <label class="form__label" for="orgName">Название организации или ФИО ИП<span style="color:#c92a2a;">*</span></label>
+          <input class="form__field" id="orgName" placeholder="ООО «СтройБаза» / Иванов Иван Иванович" />
+          <div class="field-error" data-error-for="orgName"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form__group">
+            <label class="form__label" for="orgInn">ИНН<span style="color:#c92a2a;">*</span></label>
+            <input class="form__field" id="orgInn" inputmode="numeric" placeholder="10 или 12 цифр" maxlength="12" />
+            <div class="field-error" data-error-for="orgInn"></div>
+          </div>
+          <div class="form__group">
+            <label class="form__label" for="orgOgrn">ОГРН / ОГРНИП</label>
+            <input class="form__field" id="orgOgrn" inputmode="numeric" placeholder="13 или 15 цифр" maxlength="15" />
+            <div class="field-error" data-error-for="orgOgrn"></div>
+          </div>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="orgAddress">Юридический адрес<span style="color:#c92a2a;">*</span></label>
+          <input class="form__field" id="orgAddress" placeholder="Индекс, город, улица, дом, офис" autocomplete="street-address" />
+          <div class="field-error" data-error-for="orgAddress"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form__group">
+            <label class="form__label" for="orgContact">Контактное лицо<span style="color:#c92a2a;">*</span></label>
+            <input class="form__field" id="orgContact" placeholder="ФИО" />
+            <div class="field-error" data-error-for="orgContact"></div>
+          </div>
+          <div class="form__group">
+            <label class="form__label" for="orgPosition">Должность</label>
+            <input class="form__field" id="orgPosition" placeholder="Напр. Директор" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form__group">
+            <label class="form__label" for="orgPhone">Телефон компании<span style="color:#c92a2a;">*</span></label>
+            <input class="form__field" id="orgPhone" type="tel" placeholder="+7 (900) 000-00-00" />
+            <div class="field-error" data-error-for="orgPhone"></div>
+          </div>
+          <div class="form__group">
+            <label class="form__label" for="orgEmail">E-mail компании<span style="color:#c92a2a;">*</span></label>
+            <input class="form__field" id="orgEmail" type="email" placeholder="info@company.ru" />
+            <div class="field-error" data-error-for="orgEmail"></div>
+          </div>
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="orgDocs">Подтверждающие документы<span style="color:#c92a2a;">*</span></label>
+          <p class="text-muted" style="font-size:13px; margin:0 0 8px;">Свидетельство о регистрации (выписка ЕГРЮЛ/ЕГРИП) и/или доверенность. PDF, JPG или PNG, до 10 МБ на файл, можно несколько.</p>
+          <input class="form__field" id="orgDocs" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple />
+          <ul id="docsList" class="docs-list" aria-live="polite"></ul>
+          <div class="field-error" data-error-for="orgDocs"></div>
+        </div>
+
+        <div class="form__group consent-group">
+          <label class="checkbox-row">
+            <input type="checkbox" id="consent" />
+            <span>Согласен на обработку персональных и регистрационных данных в соответствии с <a href="/frontend/privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a><span style="color:#c92a2a;">*</span></span>
+          </label>
+          <div class="field-error" data-error-for="consent"></div>
+        </div>
+      </section>
+
+      <div class="auth-btns" style="margin-top:16px;">
+        <button class="btn btn-primary btn-lg" type="submit" id="submitBtn">Создать аккаунт</button>
       </div>
+      <div class="form-error form-error--global" id="formError" role="alert" hidden></div>
+      <p class="text-muted" style="margin-top:16px;">Уже есть аккаунт? <a href="/frontend/auth.html">Войти</a></p>
     </form>
   </main>
-
- 
 </body>
 </html>

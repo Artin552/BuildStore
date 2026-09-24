@@ -18,6 +18,7 @@ require('dotenv').config(); // Загружаем переменные окру�
 const authRoutes = require('./routes/auth'); // Маршруты аутентификации
 const listingsRoutes = require('./routes/listings'); // Маршруты объявлений
 const ordersRoutes = require('./routes/orders'); // Маршруты заказов
+const adminRoutes = require('./routes/admin'); // Админ-панель (модерация, пользователи)
 
 // ============================================================
 // ОБРАБОТЧИКИ ОШИБОК
@@ -116,6 +117,9 @@ app.use('/api/listings', listingsRoutes);
 
 // Все маршруты заказов начинаются с /api/orders
 app.use('/api/orders', ordersRoutes);
+
+// Все маршруты админ-панели начинаются с /api/admin (доступ проверяется на бэкенде по ролям)
+app.use('/api/admin', adminRoutes);
 
 // ============================================================
 // ОБЩИЙ ОБРАБОТЧИК ОШИБОК

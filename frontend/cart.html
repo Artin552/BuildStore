@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Корзина — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/auth.js" defer></script>
-  <script src="/js/cart.js" defer></script>
-  <script src="/js/cart-page.js" defer></script>
+  <title>Корзина — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/cart.js" defer></script>
+  <script src="/frontend/js/cart-page.js" defer></script>
   <style>
     .cart-item {
       display: flex;
@@ -112,43 +115,15 @@
 </head>
 <body>
   <!-- ШАПКА САЙТА -->
-  <header class="header main-header" id="mainHeader">
-    <div class="top_header header-inner container">
-      <!-- Логотип и брендинг -->
-      <div class="logo-wrap">
-        <a class="logo" href="/index.html">
-          <span class="brand">BUILDSTORE</span>
-        </a>
-        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
-          🔨
-        </div>
-      </div>
-
-      <!-- Поиск товаров -->
-      <div style="flex: 1; margin: 0 16px;">
-        <div class="search-inline">
-          <input id="searchInput" placeholder="Поиск по объявлениям">
-          <button class="btn" id="searchBtn">Поиск</button>
-        </div>
-      </div>
-
-      <!-- Кнопка "Добавить" -->
-      <a href="/frontend/add.html" class="btn">Создать обьявление</a>
-    </div>
-  </header>
+  <header id="site-header"></header>
 
   <!-- ОСНОВНОЕ СОДЕРЖИМОЕ -->
   <main class="container" style="padding: 20px 0 40px 0;">
-    <h1 style="margin-bottom: 24px;">🛒 Корзина</h1>
+    <h1 style="margin-bottom: 24px;">Корзина</h1>
 
     <div id="cartContainer">
       <!-- Содержимое будет заполнено JavaScript -->
     </div>
   </main>
 
-  <!-- ФУТЕР -->
-  <footer class="footer">
-    © 2025 СтройМаркет
-  </footer>
-</body>
-</html>
+  <footer id="site-footer"></footer>

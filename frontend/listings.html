@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Категории товаров — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/cart.js" defer></script>
-  <script src="/js/listings.js" defer></script>
-  <script src="/js/auth.js" defer></script>
+  <title>Категории товаров — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/cart.js" defer></script>
+  <script src="/frontend/js/listings.js" defer></script>
 </head>
 
 <body>
@@ -15,38 +18,7 @@
   <!-- ========================================
        ШАПКА САЙТА
        ======================================== -->
-<header class="header main-header" id="mainHeader">
-    <div class="top_header header-inner container">
-      <!-- Логотип и брендинг -->
-      <div class="logo-wrap">
-        <a class="logo" href="/index.html">
-          <span class="brand">BUILDSTORE</span>
-        </a>
-        <!-- Интерактивный молоток (при наведении подпрыгивает) -->
-        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
-          🔨
-        </div>
-      </div>
-
-
-      <!-- Поиск товаров -->
-       <div class="search-inline">
-       <form action="/frontend/listings.html" method="GET" style="display: flex; gap: 8px; width: 100%;">
-          <input name="q" placeholder="Поиск по объявлениям" style="flex: 1;">
-          <button type="submit" class="btn">Поиск</button>
-        </form>
-      </div>
-
-      <!-- Кнопки навигации -->
-        <div style="display: flex; gap: 8px; align-items: center;">
-      <!-- Контейнер для динамических кнопок аутентификации -->
-        <div class="auth-links"></div>
-      
-      <!-- Кнопка "Добавить" остаётся всегда -->
-      <a href="/frontend/add.html" class="btn">Добавить</a>
-    </div>
-    </div>
-  </header>
+<header id="site-header"></header>
 
   <!-- ========================================
        ОСНОВНОЙ КОНТЕНТ
@@ -208,11 +180,9 @@
       </div>
     </section>
 
-    <!-- ПОДВАЛ -->
-    <footer class="footer" style="margin-top: 40px;">
-      © 2025 СтройМаркет
-    </footer>
   </main>
+
+  <footer id="site-footer"></footer>
 
 
 

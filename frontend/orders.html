@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Мои заказы — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/auth.js" defer></script>
-  <script src="/js/orders.js" defer></script>
+  <title>Мои заказы — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/orders.js" defer></script>
   <style>
     .order-card {
       border: 1px solid #ddd;
@@ -92,31 +95,17 @@
 </head>
 <body>
   <!-- ШАПКА САЙТА -->
-  <header class="header main-header">
-    <div class="top_header header-inner container">
-      <div class="logo-wrap">
-        <a class="logo" href="/index.html">
-          <span class="brand">BUILDSTORE</span>
-        </a>
-        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
-          🔨
-        </div>
-      </div>
-    </div>
-  </header>
+  <header id="site-header"></header>
 
   <!-- ОСНОВНОЕ СОДЕРЖИМОЕ -->
   <main class="container" style="padding: 20px 0 40px 0; max-width: 800px;">
-    <h1 style="margin-bottom: 24px;">📦 Мои заказы</h1>
+    <h1 style="margin-bottom: 24px;">Мои заказы</h1>
 
     <div id="ordersContainer" class="loading">
       Загрузка заказов...
     </div>
   </main>
 
-  <!-- ФУТЕР -->
-  <footer class="footer">
-    © 2025 СтройМаркет
-  </footer>
+  <footer id="site-footer"></footer>
 </body>
 </html>

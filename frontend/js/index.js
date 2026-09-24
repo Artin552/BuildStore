@@ -10,10 +10,9 @@
   // АВТОМАТИЧЕСКИЙ ГОД В ФУТЕРЕ
   // ============================================================
   function initFooterYear() {
-    const yearEl = document.getElementById('currentYear');
-    if (yearEl) {
-      yearEl.textContent = new Date().getFullYear();
-    }
+    // Все элементы года (в т.ч. в общем футере layout.js на других страницах)
+    const els = document.querySelectorAll('#currentYear, [data-year]');
+    els.forEach(el => { el.textContent = new Date().getFullYear(); });
   }
 
   // ============================================================
@@ -25,11 +24,14 @@
 
     if (!menuBtn || !navMenu) return;
 
+    const ICON_MENU = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>';
+    const ICON_CLOSE = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
     menuBtn.addEventListener('click', () => {
       navMenu.classList.toggle('active');
       const isExpanded = navMenu.classList.contains('active');
       menuBtn.setAttribute('aria-expanded', isExpanded);
-      menuBtn.textContent = isExpanded ? '✕' : '☰';
+      menuBtn.innerHTML = isExpanded ? ICON_CLOSE : ICON_MENU; // SVG вместо ☰/✕ (ТЗ 2A.3)
     });
 
     // Закрываем меню при клике вне его
@@ -37,7 +39,6 @@
       if (!menuBtn.contains(e.target) && !navMenu.contains(e.target)) {
         navMenu.classList.remove('active');
         menuBtn.setAttribute('aria-expanded', 'false');
-        menuBtn.textContent = '☰';
       }
     });
 
@@ -46,7 +47,7 @@
       link.addEventListener('click', () => {
         navMenu.classList.remove('active');
         menuBtn.setAttribute('aria-expanded', 'false');
-        menuBtn.textContent = '☰';
+        menuBtn.innerHTML = ICON_MENU;
       });
     });
   }
@@ -55,7 +56,8 @@
   // ПЕРЕКЛЮЧАТЕЛЬ ТЕМЫ В ШАПКЕ
   // ============================================================
   function initThemeToggle() {
-    const container = document.getElementById('themeToggleContainer');
+    // На внутренних страницах переключатель создаёт layout.js; здесь — для главной
+    const container = document.querySelector('#themeToggleContainer:not(:has(select))');
     if (container && window.BuildStoreTheme) {
       window.BuildStoreTheme.createToggle(container);
     }
@@ -84,9 +86,8 @@
     if (!grid) return;
 
     try {
-      const res = await fetch('/api/listings?limit=100');
-      if (!res.ok) throw new Error('Ошибка загрузки');
-      
+      // apiFetch имеет встроенный таймаут — «вечного спиннера» не будет (ТЗ 2A.0)
+      const res = await window.BuildStoreApi.apiFetch('/listings?limit=100');
       const listings = await res.json();
       
       // Группируем по категориям
@@ -128,6 +129,7 @@
       }).join('');
       
     } catch (err) {
+      // Техническая причина — только в консоль (ТЗ 2.5)
       console.error('Ошибка загрузки категорий:', err);
       grid.innerHTML = `
         <div class="empty-state">
@@ -146,15 +148,13 @@
     if (!container) return;
 
     try {
-      const res = await fetch('/api/listings?limit=8');
-      if (!res.ok) throw new Error('Ошибка загрузки');
-      
+      const res = await window.BuildStoreApi.apiFetch('/listings?limit=8');
       const listings = await res.json();
       
       if (listings.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <div class="empty-state-icon">📦</div>
+            <div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></div>
             <div class="empty-state-title">Товары пока не добавлены</div>
             <div class="empty-state-description">Загляните позже — мы постоянно пополняем ассортимент</div>
           </div>
@@ -191,9 +191,9 @@
       console.error('Ошибка загрузки товаров:', err);
       container.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">⚠️</div>
-          <div class="empty-state-title">Не удалось загрузить товары</div>
-          <div class="empty-state-description">Попробуйте обновить страницу</div>
+          <div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+          <div class="empty-state-title">Не удалось загрузить объявления</div>
+          <div class="empty-state-description">Попробуйте обновить страницу — если ошибка повторяется, сервис временно недоступен</div>
         </div>
       `;
     }

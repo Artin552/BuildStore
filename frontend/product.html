@@ -3,49 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Объявление — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/auth.js" defer></script>
-  <script src="/js/cart.js" defer></script>
-  <script src="/js/product.js" defer></script>
+  <title>Объявление — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/cart.js" defer></script>
+  <script src="/frontend/js/product.js" defer></script>
 </head>
 <body>
   
   <!-- ========================================
        ШАПКА САЙТА
        ======================================== -->
-    <header class="header main-header" id="mainHeader">
-    <div class="top_header header-inner container">
-      <!-- Логотип и брендинг -->
-      <div class="logo-wrap">
-        <a class="logo" href="/index.html">
-          <span class="brand">BUILDSTORE</span>
-        </a>
-        <!-- Интерактивный молоток (при наведении подпрыгивает) -->
-        <div class="hammer" id="hammer" title="Строительный молоток" aria-hidden="true">
-          🔨
-        </div>
-      </div>
-
-      <!-- Поиск товаров -->
-      <div style="flex: 1; margin: 0 16px;">
-        <div class="search-inline">
-          <input id="searchInput" placeholder="Поиск по объявлениям">
-          <button class="btn" id="searchBtn">Поиск</button>
-        </div>
-      </div>
-
-      <!-- Кнопка "Добавить" остаётся всегда -->
-      <a href="/frontend/add.html" class="btn">Создать обьявление</a>
-    </div>
-    </div>
-  </header>
+    <header id="site-header"></header>
 
   <main class="container" style="padding-top:24px">
     <div id="productDetail"></div>
   </main>
 
-  <footer class="footer">© 2025 СтройМаркет</footer>
+  <footer id="site-footer"></footer>
 
 
 </body>
