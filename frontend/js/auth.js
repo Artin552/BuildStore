@@ -59,10 +59,12 @@
 
   const login = document.createElement('a');
   login.href = authHref();
+  login.className = 'btn btn-secondary btn-sm';
   login.textContent = 'Вход';
 
   const reg = document.createElement('a');
   reg.href = regHref();
+  reg.className = 'btn btn-primary btn-sm';
   reg.textContent = 'Регистрация';
 
   container.appendChild(login);

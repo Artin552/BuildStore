@@ -3,6 +3,36 @@ const router = express.Router();
 const db = require('../db');
 const authUtils = require('./auth');
 const getUserFromAuthHeader = authUtils.getUserFromAuthHeader;
+const { roleToJwt } = authUtils;
+
+// Категории, для которых сертификат/паспорт товара обязателен для организаций (ТЗ 7.2).
+// Уточняется у заказчика (ТЗ 9); по умолчанию — электроинструмент и СИЗ.
+const CERT_REQUIRED_CATEGORIES = ['Электроинструмент', 'СИЗ'];
+
+// Информация о продавце объявления (ТЗ 7.1): тип аккаунта, статус верификации,
+// название организации. Один запрос на весь список — без N+1.
+function attachSellerInfo(rows, callback) {
+  const ownerIds = Array.from(new Set((rows || []).map(r => r.owner_id).filter(id => id != null)));
+  if (ownerIds.length === 0) return callback(null, rows);
+  const placeholders = ownerIds.map(() => '?').join(',');
+  db.all(
+    `SELECT u.id, u.type, u.status AS user_status, o.org_name, o.status AS org_status
+     FROM users u LEFT JOIN organizations o ON o.user_id = u.id AND o.status = 'approved'
+     WHERE u.id IN (${placeholders})`,
+    ownerIds,
+    (err, sellers) => {
+      const map = new Map();
+      (sellers || []).forEach(s => map.set(s.id, s));
+      (rows || []).forEach(r => {
+        const s = map.get(r.owner_id);
+        r.sellerType = s && s.type === 'organization' ? 'organization' : 'person';
+        r.sellerVerified = !!(s && s.type === 'organization' && s.org_status === 'approved');
+        r.sellerOrgName = s ? s.org_name : null;
+      });
+      callback(null, rows);
+    }
+  );
+}
 
 // Для работы с файлами
 const fs = require('fs');
@@ -14,7 +44,8 @@ function formatListing(listing) {
   if (!listing) return null;
   return {
     ...listing,
-    imagePath: listing.imagePath ? '/uploads/' + listing.imagePath : ''
+    imagePath: listing.imagePath ? '/uploads/' + listing.imagePath : '',
+    certificatePath: listing.certificatePath ? '/uploads/certificates/' + listing.certificatePath : ''
   };
 }
 
@@ -41,7 +72,9 @@ router.get('/', (req, res) => {
   const where = [];
 
   if (q) {
-    where.push('(title LIKE ? OR description LIKE ?)');
+    // ILIKE — регистронезависимый поиск; db.js автоматически переводит
+    // его в LIKE для PostgreSQL (в pg LIKE учитывает регистр)
+    where.push('(title ILIKE ? OR description ILIKE ?)');
     const like = `%${q}%`;
     params.push(like, like);
   }
@@ -79,13 +112,18 @@ router.get('/', (req, res) => {
     const offset = (page - 1) * limit;
     // Поля in_stock/rating/discount/reviewsCount/is_hot/tags используются фильтрами
     // и бейджами фронтенда — не отдавать их здесь означает сломанные фильтры на клиенте
-    const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id, discount, rating, reviewsCount, in_stock, is_hot, tags ${baseSql} ${whereSql} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    // Снятые модератором объявления не показываем обычным посетителям (ТЗ 6.3)
+    where.push("COALESCE(moderation_status, 'published') <> 'removed'");
+    const whereSql2 = where.length ? (' WHERE ' + where.join(' AND ')) : '';
+    const sql = `SELECT id, title, category, price, description, imagePath, created_at, owner_id, discount, rating, reviewsCount, in_stock, is_hot, tags, certificatePath ${baseSql} ${whereSql2} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
     const finalParams = params.concat([limit, offset]);
     db.all(sql, finalParams, (err, rows) => {
       if (err) return res.status(500).json({ error: 'DB error' });
       const mapped = (rows || []).map(formatListing);
-      res.set('X-Total-Count', total);
-      res.json(mapped);
+      attachSellerInfo(mapped, () => {
+        res.set('X-Total-Count', total);
+        res.json(mapped);
+      });
     });
   });
 });
@@ -93,20 +131,41 @@ router.get('/', (req, res) => {
 // Get single listing by id
 router.get('/:id', (req, res) => {
   const id = req.params.id;
-  db.get('SELECT id, title, category, price, description, imagePath, created_at, owner_id, discount, rating, reviewsCount, in_stock, is_hot, tags FROM listings WHERE id = ?', [id], (err, row) => {
+  db.get('SELECT * FROM listings WHERE id = ?', [id], (err, row) => {
     if (err) return res.status(500).json({ error: 'DB error' });
     if (!row) return res.status(404).json({ error: 'Not found' });
-    res.json(formatListing(row));
+    const item = formatListing(row);
+    attachSellerInfo([item], () => res.json(item));
   });
 });
 
 // Create new listing
 router.post('/', async (req, res) => {
-  const user = getUserFromAuthHeader(req);
-  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  const jwtUser = getUserFromAuthHeader(req);
+  if (!jwtUser) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { title, category, price, description, imageBase64 } = req.body;
-  if (!title || !price) return res.status(400).json({ error: 'title and price required' });
+  const { title, category, price, description, imageBase64, certificateBase64 } = req.body;
+  if (!title || String(title).trim().length < 2) return res.status(400).json({ error: 'Укажите заголовок объявления' });
+  if (!price || Number(price) < 0 || !String(price).trim()) return res.status(400).json({ error: 'Укажите корректную цену' });
+
+  // Проверка прав и статуса продавца — по данным БД, а не только по токену (ТЗ 5.3, 6.4)
+  db.get('SELECT id, role, status, type FROM users WHERE id = ?', [jwtUser.id], async (gErr, seller) => {
+    if (gErr) return res.status(500).json({ error: 'DB error' });
+    if (!seller) return res.status(401).json({ error: 'Unauthorized' });
+    if (seller.status === 'blocked') {
+      return res.status(403).json({ error: 'Ваш аккаунт заблокирован, размещение объявлений недоступно' });
+    }
+    if (seller.type === 'organization' && seller.status !== 'active') {
+      const msg = seller.status === 'rejected'
+        ? 'Организация отклонена модератором. Подайте документы повторно после исправления замечаний.'
+        : 'Ваша организация проходит проверку. Размещение объявлений станет доступно после подтверждения.';
+      return res.status(403).json({ error: msg });
+    }
+    return createListing(req, res, seller, title, category, price, description, imageBase64, certificateBase64);
+  });
+});
+
+async function createListing(req, res, seller, title, category, price, description, imageBase64, certificateBase64) {
 
   let finalImagePath = '';
   if (imageBase64 && imageBase64.startsWith('data:image/')) {
@@ -134,20 +193,48 @@ router.post('/', async (req, res) => {
     }
   }
 
+  // Паспорт/сертификат товара (ТЗ 7.2): принимаем PDF/JPG/PNG до 10 МБ.
+  // Для организаций в обязательных категориях загрузка документа необходима.
+  let certificatePath = '';
+  if (certificateBase64 && String(certificateBase64).startsWith('data:')) {
+    try {
+      const parts = String(certificateBase64).split(',');
+      const buffer = Buffer.from(parts[1] || '', 'base64');
+      if (buffer.length === 0) throw new Error('Empty file');
+      if (buffer.length > 10 * 1024 * 1024) throw new Error('File too large');
+      const head = buffer.slice(0, 8);
+      const isPdf = buffer.slice(0, 5).toString('latin1') === '%PDF-';
+      const isJpg = buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+      const isPng = head.equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+      if (!isPdf && !isJpg && !isPng) throw new Error('Unsupported format');
+      const ext = isPdf ? 'pdf' : (isJpg ? 'jpg' : 'png');
+      const docDir = path.join(__dirname, '..', '..', 'uploads', 'certificates');
+      fs.mkdirSync(docDir, { recursive: true });
+      certificatePath = `cert_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      fs.writeFileSync(path.join(docDir, certificatePath), buffer);
+    } catch (err) {
+      console.error('Failed to save certificate:', err.message);
+      return res.status(400).json({ error: 'Не удалось сохранить сертификат. Допустимы PDF, JPG или PNG размером до 10 МБ.' });
+    }
+  } else if (seller.type === 'organization' && CERT_REQUIRED_CATEGORIES.includes((category || '').trim())) {
+    return res.status(400).json({ error: `Для организаций сертификат/паспорт товара в категории «${category}» обязателен` });
+  }
+
   const created_at = Date.now();
   db.run(
-    `INSERT INTO listings (title, category, price, description, imagePath, created_at, owner_id) VALUES (?,?,?,?,?,?,?)`,
-    [title, category || '', price, description || '', finalImagePath, created_at, user.id],
+    `INSERT INTO listings (title, category, price, description, imagePath, created_at, owner_id, certificatePath) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+    [String(title).trim(), category || '', price, description || '', finalImagePath, created_at, seller.id, certificatePath],
     function (err) {
       if (err) return res.status(500).json({ error: 'DB error' });
       const id = this.lastID;
       db.get('SELECT * FROM listings WHERE id = ?', [id], (err2, row) => {
         if (err2) return res.status(500).json({ error: 'DB error' });
-        res.status(201).json(formatListing(row));
+        const item = formatListing(row);
+        attachSellerInfo([item], () => res.status(201).json(item));
       });
     }
   );
-});
+}
 
 // Delete listing by id
 router.delete('/:id', (req, res) => {

@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="/frontend/css/styles.css">
   
   <!-- Тема применяется до рендеринга (без мигания) -->
-  <script src="/frontend/js/theme.js"></script>
+  <script src="/frontend/js/theme.js" defer></script>
   
   <!-- Скрипты -->
+  <script src="/frontend/js/api.js" defer></script>
   <script src="/frontend/js/auth.js" defer></script>
   <script src="/frontend/js/cart.js" defer></script>
   <script src="/frontend/js/search.js" defer></script>
@@ -21,37 +22,29 @@
   <!-- ШАПКА САЙТА -->
   <header class="main-header" id="mainHeader">
     <div class="header-inner container">
-      <!-- Логотип -->
       <div class="logo-wrap">
         <a class="logo" href="/index.html">
           <span class="brand">BuildStore</span>
         </a>
       </div>
 
-      <!-- Бургер-меню для мобильных -->
-      <button class="mobile-menu-btn" aria-label="Меню">☰</button>
+      <button class="mobile-menu-btn" aria-label="Открыть меню" aria-expanded="false" aria-controls="navMenu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
 
-      <!-- Навигация -->
       <nav id="navMenu" class="main-nav">
         <a href="/index.html">Главная</a>
         <a href="/frontend/listings.html">Категории</a>
         <a href="/frontend/contacts.html">Контакты</a>
-        
-        <!-- Правая часть шапки -->
+
         <div class="header-actions">
-          <!-- Переключатель темы -->
           <div id="themeToggleContainer"></div>
-          
-          <!-- Аутентификация -->
           <div class="auth-links"></div>
-
-          <!-- Корзина -->
-          <a href="/frontend/cart.html" class="cart" id="cartBtn" title="Корзина" aria-label="Корзина">
-            🛒 <span class="cart-badge" id="cartBadge">0</span>
+          <a href="/frontend/cart.html" class="cart cart-link" id="cartBtn" title="Корзина" aria-label="Корзина">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <span class="cart-badge" id="cartBadge">0</span>
           </a>
-
-          <!-- Кнопка добавления объявления -->
-          <a class="btn btn-primary" href="/frontend/add.html" id="addBtn">+ Добавить объявление</a>
+          <a class="btn btn-primary" href="/frontend/add.html" id="addBtn">Добавить объявление</a>
         </div>
       </nav>
     </div>
@@ -66,17 +59,17 @@
       <!-- Статистика в виде карточек -->
       <div class="hero-stats">
         <div class="stat-card">
-          <span class="stat-icon">📦</span>
+          <span class="stat-icon icon-inline"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg></span>
           <span class="stat-value">5000+</span>
           <span class="stat-label">товаров</span>
         </div>
         <div class="stat-card">
-          <span class="stat-icon">🚚</span>
+          <span class="stat-icon icon-inline"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></span>
           <span class="stat-value">По всей России</span>
           <span class="stat-label">Доставка</span>
         </div>
         <div class="stat-card">
-          <span class="stat-icon">💼</span>
+          <span class="stat-icon icon-inline"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
           <span class="stat-value">B2B &amp; B2C</span>
           <span class="stat-label">Форматы</span>
         </div>
@@ -170,18 +163,17 @@
       <h2>Популярные предложения</h2>
       <div id="listings" class="listings-grid">
         <!-- Пустое состояние по умолчанию -->
-        <div class="empty-state">
-          <div class="empty-state-icon">📦</div>
-          <div class="empty-state-title">Загрузка товаров...</div>
-          <div class="empty-state-description">Пожалуйста, подождите</div>
+        <div class="empty-state" id="listingsLoading">
+          <div class="empty-state-title">Загружаем предложения…</div>
+          <div class="empty-state-description">Если список не появится в течение нескольких секунд — обновите страницу</div>
         </div>
       </div>
     </section>
 
     <!-- БЛОК ДЛЯ ПРОДАВЦОВ -->
-    <section class="cta-section" style="text-align:center;padding:60px 20px;background:var(--color-surface);border-radius:var(--radius-lg);margin:40px 0;">
-      <h2 style="margin-bottom:16px;">Продаёте стройматериалы или инструмент?</h2>
-      <p class="text-muted" style="max-width:600px;margin:0 auto 24px;">Разместите объявление на BuildStore и найдите тысячи новых клиентов. Бесплатно для частных лиц.</p>
+    <section class="cta-section">
+      <h2>Продаёте стройматериалы или инструмент?</h2>
+      <p class="text-muted cta-text">Разместите объявление на BuildStore и найдите тысячи новых клиентов. Бесплатно для частных лиц.</p>
       <a href="/frontend/add.html" class="btn btn-primary btn-lg">Разместить объявление</a>
     </section>
   </main>
@@ -193,45 +185,28 @@
         <div class="footer-column">
           <h4>Покупателям</h4>
           <a href="/frontend/listings.html">Каталог товаров</a>
-          <a href="#">Как сделать заказ</a>
-          <a href="#">Доставка и оплата</a>
-          <a href="#">Возврат товара</a>
+          <a href="/frontend/contacts.html">Как сделать заказ и доставка</a>
         </div>
-        
+
         <div class="footer-column">
           <h4>Продавцам</h4>
           <a href="/frontend/add.html">Разместить объявление</a>
-          <a href="#">Правила размещения</a>
-          <a href="#">Для бизнеса</a>
+          <a href="/frontend/my-listings.html">Мои объявления</a>
         </div>
-        
+
         <div class="footer-column">
           <h4>Контакты</h4>
-          <a href="/frontend/contacts.html">Служба поддержки</a>
-          <a href="mailto:support@buildstore.ru">support@buildstore.ru</a>
-          <a href="tel:+78000000000">8 (800) 000-00-00</a>
+          <!-- Проект учебный/демонстрационный: честная подпись, без выдуманных email/телефона компании (ТЗ 2A.5, 2A.6) -->
+          <a href="/frontend/contacts.html">Автор проекта</a>
+          <a href="https://t.me/Artin552" target="_blank" rel="noopener">Telegram автора</a>
         </div>
       </div>
-      
+
       <div class="footer-bottom">
         © <span id="currentYear"></span> BuildStore. Все права защищены.
       </div>
     </div>
   </footer>
 
-  <!-- Вспомогательный класс для скрытия label -->
-  <style>
-    .visually-hidden {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-  </style>
 </body>
 </html>

@@ -125,10 +125,12 @@
   function createThemeToggle(container) {
     if (!container) return;
     
+    // Эмодзи убраны (ТЗ 2A.3): <select> не поддерживает HTML-разметку опций,
+    // иконки рисуются CSS-переменными темы; здесь — только текстовые подписи.
     const themes = [
-      { value: 'system', label: 'Как в системе', icon: '🖥️' },
-      { value: 'light', label: 'Светлая', icon: '☀️' },
-      { value: 'dark', label: 'Тёмная', icon: '🌙' }
+      { value: 'system', label: 'Тема: как в системе' },
+      { value: 'light', label: 'Тема: светлая' },
+      { value: 'dark', label: 'Тема: тёмная' }
     ];
     
     const current = getStoredTheme();

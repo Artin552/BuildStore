@@ -3,12 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Добавить объявление — СтройМаркет</title>
-  <link rel="stylesheet" href="/css/styles.css">
-  <script src="/js/auth.js"></script>
-   <script src="/js/add.js" defer></script>
+  <title>Добавить объявление — BuildStore</title>
+  <link rel="stylesheet" href="/frontend/css/styles.css">
+  <script src="/frontend/js/theme.js" defer></script>
+  <script src="/frontend/js/api.js" defer></script>
+  <script src="/frontend/js/layout.js" defer></script>
+  <script src="/frontend/js/auth.js" defer></script>
+  <script src="/frontend/js/add.js" defer></script>
 </head>
 <body>
+  <header id="site-header"></header>
+
   <main class="container" style="padding-top:40px; max-width:760px;">
     <h2>Добавить объявление</h2>
     <form id="addForm" class="form">
@@ -30,12 +35,20 @@
       <label>Фото (1):</label>
       <input id="photo" type="file" accept="image/*">
 
+      <!-- Паспорт/сертификат товара (ТЗ 7.2): обязателен для организаций в отдельных категориях -->
+      <label for="certificate">Паспорт / сертификат товара <span id="certRequiredMark" hidden style="color:#c92a2a;">*</span></label>
+      <p class="text-muted" style="font-size:13px; margin:4px 0;">PDF, JPG или PNG, до 10 МБ. Для верифицированных организаций в категориях «Электроинструмент» и «СИЗ» — обязателен.</p>
+      <input id="certificate" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+      <div class="field-error" data-error-for="certificate"></div>
+
       <div style="display:flex; gap:8px; justify-content:flex-end;">
         <button class="btn" type="submit">Опубликовать</button>
   <a href="/index.html" class="btn secondary">Отмена</a>
       </div>
     </form>
   </main>
+
+  <footer id="site-footer"></footer>
 
 
 </body>

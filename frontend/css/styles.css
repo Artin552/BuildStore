@@ -1024,3 +1024,194 @@ body.my-listings-page .card .card-actions button {
     text-align: center;
   }
 }
+/* ================================================================= */
+/* 14. ДОБАВЛЕНО ПРИ РЕДИЗАЙНЕ (ТЗ): дизайн-система и компоненты     */
+/* ================================================================= */
+
+/* Скрытые визуально, но доступные скринридеру подписи */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Единый стиль для SVG-иконок вместо эмодзи */
+.icon-inline { display: inline-flex; align-items: center; vertical-align: middle; }
+
+/* Кнопки: основная / второстепенная контурная / размер sm */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: 2px solid var(--primary);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-primary:hover { filter: brightness(1.08); color: #fff; }
+.btn-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-secondary:hover { background: rgba(26, 54, 93, 0.08); }
+.btn-sm { min-height: 44px; padding: 6px 12px; font-size: 14px; }
+.btn-lg { padding: 14px 28px; font-size: 17px; }
+
+/* Плашки/бейджи */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.badge-category { background: rgba(0, 196, 180, 0.14); color: var(--accent, #00857a); }
+.badge-stock { background: rgba(22, 163, 74, 0.14); color: #15803d; }
+.badge-out-of-stock { background: rgba(107, 114, 128, 0.16); color: #4b5563; }
+.badge-warning { background: #ffb400; color: #0e2140; }
+
+/* Плитка категории (bento) */
+.category-tile {
+  display: flex;
+  align-items: flex-end;
+  min-height: 160px;
+  border-radius: var(--radius, 12px);
+  overflow: hidden;
+  color: #fff;
+  text-decoration: none;
+  background-position: center;
+  background-size: cover;
+  transition: transform .2s ease;
+}
+.category-tile:hover { transform: translateY(-2px); color: #fff; }
+.category-tile-large { grid-column: span 2; grid-row: span 2; min-height: 340px; }
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap, 12px);
+}
+.category-tile-content { padding: 16px; width: 100%; }
+.category-tile-title { font-size: 20px; font-weight: 800; }
+.category-tile-count { font-size: 13px; opacity: .9; }
+
+/* Пустое состояние и состояние ошибки */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--muted, #6b7280);
+  background: var(--card, #fff);
+  border-radius: var(--radius, 12px);
+  border: 1px dashed rgba(0,0,0,.15);
+}
+.empty-state-icon { display: flex; justify-content: center; margin-bottom: 12px; }
+.empty-state-title { font-weight: 700; font-size: 17px; color: var(--text, inherit); }
+.empty-state-description { margin-top: 6px; font-size: 14px; }
+
+/* Быстрые теги поиска */
+.quick-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.quick-tag {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: var(--card, #fff);
+  color: var(--text, #1E293B);
+  cursor: pointer;
+  font: inherit;
+}
+.quick-tag:hover { border-color: var(--primary); }
+
+/* Переключатель темы */
+.theme-select {
+  min-height: 44px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,.15);
+  background: var(--card, #fff);
+  color: var(--text, inherit);
+  cursor: pointer;
+}
+
+/* Корзина как SVG-кнопка (без эмодзи) */
+.cart-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  position: relative;
+}
+
+/* Карточка товара */
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--gap, 12px);
+}
+.card-image { position: relative; }
+.card-image img { width: 100%; height: 180px; object-fit: cover; display: block; border-radius: var(--radius, 12px) var(--radius, 12px) 0 0; }
+.card-content { padding: 14px; }
+.card-title { font-size: 16px; margin-bottom: 8px; }
+.card-price { font-weight: 800; font-size: 18px; color: var(--primary); }
+.card-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+/* Шаги «Как это работает» */
+.steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+.step-card {
+  background: var(--card, #fff);
+  border-radius: var(--radius, 12px);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.step-icon { color: var(--accent, #00C4B4); margin-bottom: 12px; display: flex; }
+
+/* Фокус — видимость для клавиатуры (ТЗ 0) */
+:focus-visible {
+  outline: 3px solid var(--accent, #00C4B4);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Тёмная тема через data-theme (переменные, без дублирования стилей) */
+[data-theme="dark"] {
+  /* Тёмная тема: фон почти чёрно-синий, поверхности тёмные,
+     акцент — тот же сигнальный жёлтый, чуть светлее (ТЗ 1.1) */
+  --bg: #08101f;
+  --text: #eaf0fb;
+  --card: #101b31;
+  --muted: #9db0cc;
+  --primary: #ffc233;
+  --accent: #ffc233;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+/* Плавная смена темы без «мигания» */
+html.theme-transition, html.theme-transition * {
+  transition: background-color .3s ease, color .3s ease, border-color .3s ease;
+}
+[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+[data-theme="dark"] h1, [data-theme="dark"] h2, [data-theme="dark"] h3, [data-theme="dark"] h4 { color: var(--text); }
+[data-theme="dark"] .btn-secondary { color: var(--primary); border-color: var(--primary); }
+[data-theme="dark"] .btn-secondary:hover { background: rgba(79, 140, 255, 0.15); }
+[data-theme="dark"] .quick-tag, [data-theme="dark"] .theme-select {
+  background: var(--card); color: var(--text); border-color: rgba(255,255,255,.2);
+}
+[data-theme="dark"] .empty-state { border-color: rgba(255,255,255,.25); }
+[data-theme="dark"] a { color: #ffd980; }
+[data-theme="dark"] .btn-primary { color: #0e2140; border-color: var(--primary); }
+[data-theme="dark"] .btn-primary:hover { color: #0e2140; }
+[data-theme="dark"] .contact-link { color: #0e2140; }

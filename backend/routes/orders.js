@@ -57,7 +57,7 @@ router.post('/', (req, res) => {
 
       // Вставляем заказ
       db.run(
-        'INSERT INTO orders (user_id, total, status, created_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO orders (user_id, total, status, created_at) VALUES ($1, $2, $3, $4) RETURNING id',
         [user.id, total.toFixed(2), 'pending', createdAt],
         function(err) {
           if (err) {
@@ -73,7 +73,7 @@ router.post('/', (req, res) => {
 
           normalized.forEach((item) => {
             db.run(
-              'INSERT INTO order_items (order_id, listing_id, quantity, price_at_purchase, created_at) VALUES (?, ?, ?, ?, ?)',
+              'INSERT INTO order_items (order_id, listing_id, quantity, price_at_purchase, created_at) VALUES ($1, $2, $3, $4, $5)',
               [orderId, item.id, item.quantity, (priceById.get(item.id) || 0).toFixed(2), createdAt],
               (err) => {
                 if (err) {

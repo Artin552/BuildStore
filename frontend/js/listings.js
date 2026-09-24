@@ -22,7 +22,7 @@ async function fetchAllListings() {
     allListings = [];
 
     for (let page = 1; page <= MAX_PAGES; page++) {
-      const response = await fetch(`/api/listings?limit=${PAGE_SIZE}&page=${page}`);
+      const response = await window.BuildStoreApi.apiFetch(`/listings?limit=${PAGE_SIZE}&page=${page}`);
 
       if (!response.ok) {
         throw new Error('Ошибка при получении ответа от сервера');
@@ -42,8 +42,9 @@ async function fetchAllListings() {
 
     return allListings;
   } catch (error) {
-    console.error('❌ Ошибка при загрузке товаров:', error);
-    return [];
+    // Техническая причина — в консоль; пользователю покажет её renderCategories/renderProducts (ТЗ 2.5)
+    console.error('Ошибка при загрузке товаров:', error);
+    return null; // null = ошибка, [] = пустой каталог
   }
 }
 
@@ -572,22 +573,38 @@ document.getElementById('fMaxPrice').addEventListener('change', () => {
  * Загружает товары и показывает категории
  * при загрузке страницы
  */
-async function initPage() {
-  console.log('🚀 Инициализация страницы...');
+// Понятное пользователю состояние ошибки загрузки (ТЗ 2.5):
+// техническая причина остаётся только в консоли, «вечного спиннера» нет (ТЗ 2A.0)
+function showLoadError() {
+  const grid = document.getElementById('categoryGrid');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-title">Не удалось загрузить объявления</div>
+      <div class="empty-state-description">Попробуйте обновить страницу — если ошибка повторяется, сервис временно недоступен</div>
+    </div>`;
+}
 
-  // 🔍 Шаг 1: проверяем, есть ли поисковый запрос в URL
+async function initPage() {
+  // Шаг 1: проверяем, есть ли поисковый запрос в URL
   const urlParams = new URLSearchParams(window.location.search);
   const searchQuery = urlParams.get('q'); // например: "молоток"
   const searchCategory = urlParams.get('category') || ''; // категория из формы на главной
 
-  // 📥 Шаг 2: загружаем все объявления
-  await fetchAllListings();
+  // Шаг 2: загружаем все объявления (с таймаутом внутри apiFetch)
+  const listings = await fetchAllListings();
 
-  // 🔍 Шаг 3: если есть запрос — показываем поиск
+  // null означает ошибку сети/сервера/таймаут — показываем понятное сообщение
+  if (listings === null) {
+    showLoadError();
+    return;
+  }
+
+  // Шаг 3: если есть запрос — показываем поиск
   if (searchQuery) {
     showSearchResults(searchQuery, searchCategory);
   }
-  // 🗂️ Шаг 4: если нет — показываем категории
+  // Шаг 4: если нет — показываем категории
   else {
     const categories = getCategories(allListings);
     displayCategories(categories);
